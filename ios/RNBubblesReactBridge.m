@@ -232,7 +232,17 @@ RCT_EXPORT_METHOD(openService:(NSString*)service_Id)
 
 }
 
-
+RCT_EXPORT_METHOD(openBluetoothSettings)
+{
+    NSString *settingsUrl= @"App-Prefs:root=Bluetooth";
+    if ([[UIApplication sharedApplication] respondsToSelector:@selector(openURL:options:completionHandler:)]) {
+        
+        [[UIApplication sharedApplication] openURL:[NSURL URLWithString:settingsUrl] options:@{} completionHandler:^(BOOL success) {
+            NSLog(@"URL opened");
+        }];
+    }
+    
+}
 
 
 
@@ -264,6 +274,7 @@ static RNBubblesReactBridge * _bubblesReactBridge;
              @"askForNotificationPermission",
              @"getServices",
              @"onServicesChange",
+             @"openBluetoothSettings",
              @"fetchServices"];
 }
 

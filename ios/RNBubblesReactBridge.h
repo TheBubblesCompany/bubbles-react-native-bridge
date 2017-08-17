@@ -24,7 +24,7 @@
 -(void)getServices;
 -(void)fetchServices;
 -(void)openService:(NSString*)service_Id;
-
+-(void)openBluetoothSettings;
 
 
 @property (strong, nonatomic) NSMutableArray * beacons;
