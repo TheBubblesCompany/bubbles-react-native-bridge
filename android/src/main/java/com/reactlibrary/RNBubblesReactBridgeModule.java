@@ -313,12 +313,19 @@ public class RNBubblesReactBridgeModule extends ReactContextBaseJavaModule {
     @Override
     public void update(Observable observable, Object data) {
       if (observable instanceof BluetoothStateObservable && data instanceof Boolean) {
+        try {
 
-        log("onBluetoothStateChange");
+          log("onBluetoothStateChange");
 
-        WritableMap params = Arguments.createMap();
-        params.putBoolean("isActivated", (Boolean) data);
-        sendEvent("onBluetoothStateChange", params);
+          JSONObject result = new JSONObject();
+          result.put("isActivated", data);
+          WritableMap params = Arguments.createMap();
+          params.putString("result", result.toString());
+          sendEvent("onBluetoothStateChange", params);
+
+        } catch (JSONException e) {
+          e.printStackTrace();
+        }
       }
     }
   }
@@ -328,17 +335,23 @@ public class RNBubblesReactBridgeModule extends ReactContextBaseJavaModule {
     @Override
     public void update(Observable observable, Object data) {
       if (observable instanceof BeaconsListObservable && data instanceof MyBeacon) {
+        try {
 
-        log("onBeaconChange");
+          log("onBeaconChange");
 
-        final MyBeacon beacon = (MyBeacon) data;
+          final MyBeacon beacon = (MyBeacon) data;
+          JSONObject result = new JSONObject();
+          result.put("uuid", beacon.uuid);
+          result.put("major", beacon.major);
+          result.put("minor", beacon.minor);
+          result.put("event", beacon.event);
+          WritableMap params = Arguments.createMap();
+          params.putString("result", result.toString());
+          sendEvent("onBeaconChange", params);
 
-        WritableMap params = Arguments.createMap();
-        params.putString("uuid", beacon.uuid);
-        params.putString("major", beacon.major);
-        params.putString("minor", beacon.minor);
-        params.putString("event", beacon.event);
-        sendEvent("onBeaconChange", params);
+        } catch (JSONException e) {
+          e.printStackTrace();
+        }
       }
     }
   }
@@ -348,12 +361,19 @@ public class RNBubblesReactBridgeModule extends ReactContextBaseJavaModule {
     @Override
     public void update(Observable observable, Object data) {
       if (observable instanceof UniqueIdObservable && data instanceof Boolean) {
+        try {
 
-        log("onSendUniqueId");
+          log("onSendUniqueId");
 
-        WritableMap params = Arguments.createMap();
-        params.putBoolean("isAuthorized", (Boolean) data);
-        sendEvent("onSendUniqueId", params);
+          JSONObject result = new JSONObject();
+          result.put("isAuthorized", data);
+          WritableMap params = Arguments.createMap();
+          params.putString("result", result.toString());
+          sendEvent("onSendUniqueId", params);
+
+        } catch (JSONException e) {
+          e.printStackTrace();
+        }
       }
     }
   }
@@ -363,12 +383,19 @@ public class RNBubblesReactBridgeModule extends ReactContextBaseJavaModule {
     @Override
     public void update(Observable observable, Object data) {
       if (observable instanceof LocalizationObservable && data instanceof Boolean) {
+        try {
 
-        log("onLocalizationPermissionChange");
+          log("onLocalizationPermissionChange");
 
-        WritableMap params = Arguments.createMap();
-        params.putBoolean("isAuthorized", (Boolean) data);
-        sendEvent("onLocalizationPermissionChange", params);
+          JSONObject result = new JSONObject();
+          result.put("isAuthorized", data);
+          WritableMap params = Arguments.createMap();
+          params.putString("result", result.toString());
+          sendEvent("onLocalizationPermissionChange", params);
+
+        } catch (JSONException e) {
+          e.printStackTrace();
+        }
       }
     }
   }
@@ -407,7 +434,6 @@ public class RNBubblesReactBridgeModule extends ReactContextBaseJavaModule {
           services.put(jsonService);
 
           result.put("services", services);
-          result.put("success", true);
           params.putString("result", result.toString());
         } catch (JSONException e) {
           params.putString("result", DEFAULT_FAILED_HANDLER_RETURN);
