@@ -5,18 +5,21 @@ import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
-import android.widget.Toast;
 import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
+import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.bridge.WritableNativeArray;
+import com.facebook.react.bridge.WritableNativeMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
+import com.google.gson.GsonBuilder;
 import com.mybubbles.sdk.BuildConfig;
 import com.mybubbles.sdk.activities.ActivityAllowBluetooth;
 import com.mybubbles.sdk.instance.MyBubblesSDK;
@@ -29,9 +32,8 @@ import com.mybubbles.sdk.observables.ServicesListObservable;
 import com.mybubbles.sdk.observables.UniqueIdObservable;
 import com.mybubbles.sdk.utils.Const;
 import com.mybubbles.sdk.utils.ML;
-import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import org.json.JSONArray;
@@ -56,12 +58,15 @@ public class RNBubblesReactBridgeModule extends ReactContextBaseJavaModule {
     }
   }
 
-  private static final String DURATION_SHORT_KEY = "SHORT";
-  private static final String DURATION_LONG_KEY = "LONG";
-
-  public static boolean isReactUpToDate = false;
+  private static final int CALLBACK_CODE_JSON_EXCEPTION = 0;
+  private static final int CALLBACK_CODE_UNKNOWN_SERVICE = 1;
+  private static final int CALLBACK_CODE_BRIDGE_VERSION = 2;
+  private static final int CALLBACK_CODE_BLUETOOTH_ERROR = 3;
+  private static final int CALLBACK_CODE_BLUETOOTH_ON = 4;
 
   private final ReactApplicationContext reactContext;
+
+  public static boolean isReactUpToDate = false;
 
   public RNBubblesReactBridgeModule(ReactApplicationContext reactContext) {
     super(reactContext);
@@ -76,15 +81,6 @@ public class RNBubblesReactBridgeModule extends ReactContextBaseJavaModule {
   @Override
   public String getName() {
     return "BubblesReactBridge";
-  }
-
-  // Optional
-  @Override
-  public Map<String, Object> getConstants() {
-    final Map<String, Object> constants = new HashMap<>();
-    constants.put(DURATION_SHORT_KEY, Toast.LENGTH_SHORT);
-    constants.put(DURATION_LONG_KEY, Toast.LENGTH_LONG);
-    return constants;
   }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -102,15 +98,13 @@ public class RNBubblesReactBridgeModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
-  public void getBeaconsAround() {
+  public void getBeaconsAround(Callback callback) {
     log("getBeaconsAround");
 
-    List<MyBeacon> beaconsList = MyBubblesSDK.getInstance().getCurrentBeacons();
-
-    String ret;
     try {
       JSONObject result = new JSONObject();
       JSONArray beacons = new JSONArray();
+      List<MyBeacon> beaconsList = MyBubblesSDK.getInstance().getCurrentBeacons();
       for (int i = 0; i < beaconsList.size(); i++) {
         MyBeacon beacon = beaconsList.get(i);
         JSONObject beaconJson = new JSONObject();
@@ -121,18 +115,10 @@ public class RNBubblesReactBridgeModule extends ReactContextBaseJavaModule {
         beacons.put(beaconJson);
       }
       result.put("beacons", beacons);
-      result.put("success", true);
-      ret = result.toString();
+      callback.invoke(null, result.toString());
     } catch (JSONException e) {
-      ret = "{'success':false}";
+      callback.invoke(createRejectCallback(CALLBACK_CODE_JSON_EXCEPTION, e.getMessage()), null);
     }
-
-    log("list : " + ret);
-
-    WritableMap params = Arguments.createMap();
-    params.putString("beaconsList", ret);
-
-    sendEvent("getBeaconsAround", params);
   }
 
   @ReactMethod
@@ -146,37 +132,20 @@ public class RNBubblesReactBridgeModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
-  public void openURI(String uri) {
-    log("openURI");
-
-    ML.e(TAG, "jsonData : " + uri);
-
-    try {
-      JSONObject jsonData = new JSONObject(uri);
-      uri = jsonData.getString("uri");
-    } catch (JSONException e) {
-      return;
-    }
-
-    // Otherwise, the link is not for a page on our Service, so launch another Activity that handles URLs
-    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
-    Activity activity = getCurrentActivity();
-    if (activity != null) {
-      activity.startActivity(intent);
-    }
-  }
-
-  @ReactMethod
-  public void getBluetoothState() {
+  public void getBluetoothState(Callback callback) {
     log("getBluetoothState");
 
-    WritableMap params = Arguments.createMap();
-    params.putBoolean("isActivated", getPhoneBluetoothState());
-    sendEvent("getBluetoothState", params);
+    try {
+      JSONObject result = new JSONObject();
+      result.put("isActivated", getPhoneBluetoothState());
+      callback.invoke(null, result.toString());
+    } catch (JSONException e) {
+      callback.invoke(createRejectCallback(CALLBACK_CODE_JSON_EXCEPTION, e.getMessage()), null);
+    }
   }
 
   @ReactMethod
-  public void getLocalizationPermissionState() {
+  public void getLocalizationPermissionState(Callback callback) {
     log("getLocalizationPermissionState");
 
     boolean isAuthorized = true;
@@ -185,9 +154,11 @@ public class RNBubblesReactBridgeModule extends ReactContextBaseJavaModule {
       isAuthorized = false;
     }
 
-    WritableMap params = Arguments.createMap();
-    params.putBoolean("isAuthorized", isAuthorized);
-    sendEvent("getLocalizationPermissionState", params);
+    try {
+      callback.invoke(null, new JSONObject().put("isAuthorized", isAuthorized).toString());
+    } catch (JSONException e) {
+      callback.invoke(createRejectCallback(CALLBACK_CODE_JSON_EXCEPTION, e.getMessage()), null);
+    }
   }
 
   @ReactMethod
@@ -216,10 +187,8 @@ public class RNBubblesReactBridgeModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
-  public void getServices() {
+  public void getServices(Callback callback) {
     log("getServices");
-
-    WritableMap params = Arguments.createMap();
 
     try {
       JSONObject result = new JSONObject();
@@ -246,13 +215,11 @@ public class RNBubblesReactBridgeModule extends ReactContextBaseJavaModule {
       services.put(jsonService);
 
       result.put("services", services);
-      result.put("success", true);
-      params.putString("result", result.toString());
+      callback.invoke(null, result.toString());
 
     } catch (JSONException e) {
-      params.putString("result", DEFAULT_FAILED_HANDLER_RETURN);
+      callback.invoke(createRejectCallback(CALLBACK_CODE_JSON_EXCEPTION, e.getMessage()), null);
     }
-    sendEvent("getServices", params);
   }
 
   @ReactMethod
@@ -263,12 +230,11 @@ public class RNBubblesReactBridgeModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
-  public void openService(String serviceId) {
+  public void openService(String serviceId, Callback callback) {
     log("openService");
 
     log("jsonData : " + serviceId);
 
-    WritableMap params = Arguments.createMap();
     String ret;
 
     String id;
@@ -276,9 +242,7 @@ public class RNBubblesReactBridgeModule extends ReactContextBaseJavaModule {
       JSONObject jsonData = new JSONObject(serviceId);
       id = jsonData.getString("service_id");
     } catch (JSONException e) {
-      ret = createFormattableFailedReturn(e.getMessage());
-      params.putString("callback", ret);
-      sendEvent("openService", params);
+      callback.invoke(createRejectCallback(CALLBACK_CODE_JSON_EXCEPTION, e.getMessage()), null);
       return;
     }
 
@@ -290,9 +254,7 @@ public class RNBubblesReactBridgeModule extends ReactContextBaseJavaModule {
       }
     }
     if (!flag) {
-      ret = createFormattableFailedReturn("unknown service");
-      params.putString("callback", ret);
-      sendEvent("openService", params);
+      callback.invoke(createRejectCallback(CALLBACK_CODE_UNKNOWN_SERVICE, "unknown service"), null);
       return;
     }
 
@@ -302,25 +264,44 @@ public class RNBubblesReactBridgeModule extends ReactContextBaseJavaModule {
     }
 
     ret = DEFAULT_SUCCESS_HANDLER_RETURN;
-    params.putString("callback", ret);
-    sendEvent("openService", params);
+    callback.invoke(null, ret);
   }
 
   @ReactMethod
-  public void getVersion() {
+  public void getVersion(Callback callback) {
     log("getVersion");
 
-    WritableMap params = Arguments.createMap();
-    params.putString("version", BuildConfig.BRIDGE_VERSION);
-    sendEvent("getVersion", params);
+    String version = BuildConfig.BRIDGE_VERSION;
+    if (ML.isValidStr(version)) {
+      try {
+        callback.invoke(null, new JSONObject().put("version", version).toString());
+      } catch (JSONException e) {
+        callback.invoke(createRejectCallback(CALLBACK_CODE_JSON_EXCEPTION, e.getMessage()), null);
+      }
+    } else {
+      callback.invoke(createRejectCallback(CALLBACK_CODE_BRIDGE_VERSION, "bridge version not found"), null);
+    }
   }
 
-
   @ReactMethod
-  public void enableBluetooth() {
+  public void enableBluetooth(Callback callback) {
     log("enableBluetooth");
 
-    MyBubblesSDK.getInstance().enableBluetooth();
+    BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+    if (bluetoothAdapter != null) {
+      if (!bluetoothAdapter.isEnabled()) {
+        bluetoothAdapter.enable();
+        try {
+          callback.invoke(null, new JSONObject().put("enabled", true).toString());
+        } catch (JSONException e) {
+          callback.invoke(createRejectCallback(CALLBACK_CODE_JSON_EXCEPTION, e.getMessage()), null);
+        }
+        return;
+      }
+      callback.invoke(createRejectCallback(CALLBACK_CODE_BLUETOOTH_ON, "bluetooth is already activated"), null);
+      return;
+    }
+    callback.invoke(createRejectCallback(CALLBACK_CODE_BLUETOOTH_ERROR, "bluetooth activation failed"), null);
   }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -446,6 +427,11 @@ public class RNBubblesReactBridgeModule extends ReactContextBaseJavaModule {
         .emit(eventName, params);
   }
 
+  private boolean getPhoneBluetoothState() {
+    final BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+    return adapter != null && adapter.isEnabled();
+  }
+
   private String createFormattableFailedReturn(final String message) {
     try {
       return FORMATTABLE_FAILED_HANDLER_RETURN.put("error", message).toString();
@@ -455,8 +441,77 @@ public class RNBubblesReactBridgeModule extends ReactContextBaseJavaModule {
     return null;
   }
 
-  private boolean getPhoneBluetoothState() {
-    final BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
-    return adapter != null && adapter.isEnabled();
+  private WritableMap createRejectCallback(int code, String message) {
+    ErrorObject errorObject = new ErrorObject(code, message);
+    WritableMap errorMap = null;
+    try {
+      errorMap = convertJsonToMap(new JSONObject(errorObject.toJsonString()));
+    } catch (JSONException e) {
+      e.printStackTrace();
+    }
+    return errorMap;
+  }
+
+  private class ErrorObject {
+
+    private int code;
+    private String message;
+
+    public ErrorObject(final int code, final String message) {
+      this.code = code;
+      this.message = message;
+    }
+
+    public String toJsonString() {
+      return new GsonBuilder().create().toJson(this);
+    }
+  }
+
+  private static WritableMap convertJsonToMap(JSONObject jsonObject) throws JSONException {
+    WritableMap map = new WritableNativeMap();
+    Iterator<String> iterator = jsonObject.keys();
+    while (iterator.hasNext()) {
+      String key = iterator.next();
+      Object value = jsonObject.get(key);
+      if (value instanceof JSONObject) {
+        map.putMap(key, convertJsonToMap((JSONObject) value));
+      } else if (value instanceof JSONArray) {
+        map.putArray(key, convertJsonToArray((JSONArray) value));
+      } else if (value instanceof Boolean) {
+        map.putBoolean(key, (Boolean) value);
+      } else if (value instanceof Integer) {
+        map.putInt(key, (Integer) value);
+      } else if (value instanceof Double) {
+        map.putDouble(key, (Double) value);
+      } else if (value instanceof String) {
+        map.putString(key, (String) value);
+      } else {
+        map.putString(key, value.toString());
+      }
+    }
+    return map;
+  }
+
+  private static WritableArray convertJsonToArray(JSONArray jsonArray) throws JSONException {
+    WritableArray array = new WritableNativeArray();
+    for (int i = 0; i < jsonArray.length(); i++) {
+      Object value = jsonArray.get(i);
+      if (value instanceof JSONObject) {
+        array.pushMap(convertJsonToMap((JSONObject) value));
+      } else if (value instanceof JSONArray) {
+        array.pushArray(convertJsonToArray((JSONArray) value));
+      } else if (value instanceof Boolean) {
+        array.pushBoolean((Boolean) value);
+      } else if (value instanceof Integer) {
+        array.pushInt((Integer) value);
+      } else if (value instanceof Double) {
+        array.pushDouble((Double) value);
+      } else if (value instanceof String) {
+        array.pushString((String) value);
+      } else {
+        array.pushString(value.toString());
+      }
+    }
+    return array;
   }
 }
