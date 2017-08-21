@@ -1,4 +1,3 @@
-
 # react-native-bubbles-react-bridge
 
 ## Getting started
@@ -10,7 +9,6 @@
 `$ react-native link @the-bubbles-company/bubbles-react-native-bridge`
 
 ### Manual installation
-
 
 #### iOS
 
@@ -34,15 +32,6 @@
       compile project(':react-native-bubbles-react-bridge')
   	```
 
-#### Windows
-[Read it! :D](https://github.com/ReactWindows/react-native)
-
-1. In Visual Studio add the `RNBubblesReactBridge.sln` in `node_modules/@the-bubbles-company/bubbles-react-native-bridge/windows/RNBubblesReactBridge.sln` folder to their solution, reference from their app.
-2. Open up your `MainPage.cs` app
-  - Add `using Com.Reactlibrary.RNBubblesReactBridge;` to the usings at the top of the file
-  - Add `new RNBubblesReactBridgePackage()` to the `List<IReactPackage>` returned by the `Packages` method
-
-
 ## Usage
 ```javascript
 import RNBubblesReactBridge from '@the-bubbles-company/bubbles-react-native-bridge';
@@ -51,15 +40,11 @@ import RNBubblesReactBridge from '@the-bubbles-company/bubbles-react-native-brid
 RNBubblesReactBridge;
 ```
 
+## React Bridge API
 
+### Structures
 
-
-
-# React Bridge API
-
-## Structures
-
-### Beacon
+#### Beacon
 
 ```
 {
@@ -70,7 +55,7 @@ RNBubblesReactBridge;
 }
 ```
 
-#### Parameters:
+##### Parameters:
 
 Name | Type | Attributes | Default | Description
 -|-|-|-|-
@@ -79,7 +64,7 @@ Name | Type | Attributes | Default | Description
 `major` | String | | | Beacon major in Hexadecimal
 `event` | String | | | Beacon event: ["ENTER", "EXIT", "IN_FAR_REGION", "IN_NEAR_REGION", "IN_IMMEDIATE_REGION"]
 
-### Service
+#### Service
 
 ```
 {
@@ -92,7 +77,7 @@ Name | Type | Attributes | Default | Description
 }
 ```
 
-#### Parameters:
+##### Parameters:
 
 Name | Type | Attributes | Default | Description
 -|-|-|-|-
@@ -103,51 +88,53 @@ Name | Type | Attributes | Default | Description
 `pictoSplashURL` | String | | | Service splash picto URL
 `pictoColor` | String | | | Service picto color
 
-## Call from React to Phone OS
+### Call from React to Phone OS
 
-### reactIsUpToDate()
+#### reactIsUpToDate()
+
+> On Android only
 
 This handler needs to be called when the React part is up to date _(CodePush integration)_.
 
-#### Parameters:
+##### Parameters:
 
 > No Parameters
 
-#### Callbacks:
+##### Callbacks:
 
 > No Callbackss
 
-#### Event Listener:
+##### Event Listener:
 
 > No Event Listener
 
-### log(data)
+#### log(data)
 
 Display log in application system log for debug purpose.
 
-#### Parameters:
+##### Parameters:
 
 Name | Type | Attributes | Default | Description
 -|-|-|-|-
 `data` | String | | | Data to add on application log
 
-#### Callbacks:
+##### Callbacks:
 
 > No Callbackss
 
-#### Event Listener:
+##### Event Listener:
 
 > No Event Listener
 
-### getBeaconsAround()
+#### getBeaconsAround()
 
 Retrieve the list of Beacons detected by the phone.
 
-#### Parameters:
+##### Parameters:
 
 > No Parameters
 
-#### Callbacks:
+##### Callbacks:
 
 _Resolve:_
 
@@ -156,42 +143,42 @@ Name | Type | Attributes | Default | Description
 `beacons` | Array | `<optional>` | [] | Beacons array
 `beacons.row` | Beacon | | | Beacons object
 
-_Reject:_ 
+_Reject:_
 
 Name | Type | Attributes | Default | Description
 -|-|-|-|-
 `code` | Integer | | | Error code `0`
 `message` | String | | | Error message `JSON Exception`
 
-#### Event Listener:
+##### Event Listener:
 
 > No Event Listener
 
-### closeService()
+#### closeService()
 
 Ask the native application to close the current service.
 
-#### Parameters:
+##### Parameters:
 
 > No Parameters
 
-#### Callbacks:
+##### Callbacks:
 
 > No Callbackss
 
-#### Event Listener:
+##### Event Listener:
 
 > No Event Listener
 
-### getBluetoothState()
+#### getBluetoothState()
 
 Get Bluetooth State from the phone.
 
-#### Parameters:
+##### Parameters:
 
 > No Parameters
 
-#### Callbacks:
+##### Callbacks:
 
 _Resolve:_
 
@@ -199,26 +186,26 @@ Name | Type | Attributes | Default | Description
 -|-|-|-|-
 `isActivated` | Boolean | | | Return Bluetooth state
 
-_Reject:_ 
+_Reject:_
 
 Name | Type | Attributes | Default | Description
 -|-|-|-|-
 `code` | Integer | | | Error code `0`
 `message` | String | | | Error message `JSON Exception`
 
-#### Event Listener:
+##### Event Listener:
 
 > No Event Listener
 
-### getLocalizationPermissionState()
+#### getLocalizationPermissionState()
 
 Get Localization Permission state from the phone.
 
-#### Parameters:
+##### Parameters:
 
 > No Parameters
 
-#### Callbacks:
+##### Callbacks:
 
 _Resolve:_
 
@@ -233,51 +220,53 @@ Name | Type | Attributes | Default | Description
 `code` | Integer | | | Error code `0`
 `message` | String | | | Error message `JSON Exception`
 
-#### Event Listener:
+##### Event Listener:
 
 > No Event Listener
 
-### askForUniqueIdPermission()
+#### askForUniqueIdPermission()
+
+> On Android only
 
 Ask for Unique Id Permission from phone.
 
-#### Parameters:
+##### Parameters:
 
 > No Parameters
 
-#### Callbacks:
+##### Callbacks:
 
 > No callbacks
 
-#### Event Listener:
+##### Event Listener:
 
 > See `onSendUniqueId`
 
-### askForLocalizationPermission()
+#### askForLocalizationPermission()
 
 Ask for Localization Permission from phone.
 
-#### Parameters:
+##### Parameters:
 
 > No Parameters
 
-#### Callbacks:
+##### Callbacks:
 
 > No callbacks
 
-#### Event Listener:
+##### Event Listener:
 
 > See `onLocalizationPermissionChange`
 
-### getServices()
+#### getServices()
 
 Ask for Services list.
 
-#### Parameters:
+##### Parameters:
 
 > No Parameters
 
-#### Callbacks:
+##### Callbacks:
 
 _Resolve:_
 
@@ -293,37 +282,37 @@ Name | Type | Attributes | Default | Description
 `code` | Integer | | | Error code `0`
 `message` | String | | | Error message `JSON Exception`
 
-#### Event Listener:
+##### Event Listener:
 
 > No Event Listener
 
-### fetchServices()
+#### fetchServices()
 
 Ask Application to update the list of Services.
 
-#### Parameters:
+##### Parameters:
 
 > No Parameters
 
-#### Callbacks:
+##### Callbacks:
 
 > No Callbackss
 
-#### Event Listener:
+##### Event Listener:
 
 > See `onServicesChange`
 
-### openService(service_id)
+#### openService(service_id)
 
 Ask phone to open a specific Service.
 
-#### Parameters:
+##### Parameters:
 
 Name | Type | Attributes | Default | Description
 -|-|-|-|-
 `serviceId` | String | | | Service identifier
 
-#### Callbacks:
+##### Callbacks:
 
 _Resolve:_
 
@@ -345,19 +334,19 @@ Name | Type | Attributes | Default | Description
 `code` | Integer | | | Error code `1`
 `message` | String | | | Error message `Unknown Service`
 
-#### Event Listener:
+##### Event Listener:
 
 > No Event Listener
 
-### getVersion()
+#### getVersion()
 
 Get current Application Bridge version.
 
-#### Parameters:
+##### Parameters:
 
 > No Parameters
 
-#### Callbacks:
+##### Callbacks:
 
 _Resolve:_
 
@@ -379,19 +368,19 @@ Name | Type | Attributes | Default | Description
 `code` | Integer | | | Error code `2`
 `message` | String | | | Error message `Version not found`
 
-#### Event Listener:
+##### Event Listener:
 
 > No Event Listener
 
-### enableBluetooth()
+#### enableBluetooth()
 
 Ask Application to enable the Bluetooth _(without prompting it to the user)_.
 
-#### Parameters:
+##### Parameters:
 
 > No Parameters
 
-#### Callbacks:
+##### Callbacks:
 
 _Resolve:_
 
@@ -420,97 +409,99 @@ Name | Type | Attributes | Default | Description
 `code` | Integer | | | Error code `4`
 `message` | String | | | Error message `Bluetooth already activated`
 
-#### Event Listener:
+##### Event Listener:
 
 > No Event Listener
 
-## Call from Phone OS to React
+### Call from Phone OS to React
 
-### onBluetoothStateChange()
+#### onBluetoothStateChange()
 
 Fire when Bluetooth state change.
 
-#### Parameters:
+##### Parameters:
 
 > No Parameters
 
-#### Callbacks:
+##### Callbacks:
 
 > No Callbacks
 
-#### Event Listener:
+##### Event Listener:
 
 Name | Type | Attributes | Default | Description
 -|-|-|-|-
 `isActivated` | Boolean | | | Bluetooth state
 
-### onBeaconChange()
+#### onBeaconChange()
 
 Fire Beacon data change.
 
-#### Parameters:
+##### Parameters:
 
 > No Parameters
 
-#### Callbacks:
+##### Callbacks:
 
 > No Callbacks
 
-#### Event Listener:
+##### Event Listener:
 
 Name | Type | Attributes | Default | Description
 -|-|-|-|-
 `beacon` | Beacon | | | Beacon new state
 
-### onSendUniqueId()
+#### onSendUniqueId()
+
+> On Android only
 
 Fire after Unique Id Permission question.
 
-#### Parameters:
+##### Parameters:
 
 > No Parameters
 
-#### Callbacks:
+##### Callbacks:
 
 > No Callbacks
 
-#### Event Listener:
+##### Event Listener:
 
 Name | Type | Attributes | Default | Description
 -|-|-|-|-
 `isAuthorized` | Boolean | | | Return `false` if user refuse
 
-### onLocalizationPermissionChange(success)
+#### onLocalizationPermissionChange(success)
 
 Fire after Localization permission question.
 
-#### Parameters:
+##### Parameters:
 
 > No Parameters
 
-#### Callbacks:
+##### Callbacks:
 
 > No Callbacks
 
-#### Event Listener:
+##### Event Listener:
 
 Name | Type | Attributes | Default | Description
 -|-|-|-|-
 `isAuthorized` | Boolean | | | Return `false` if user refuse
 
-### onServicesChange(success, services)
+#### onServicesChange(success, services)
 
 Fire when Services list is updated.
 
-#### Parameters:
+##### Parameters:
 
 > No Parameters
 
-#### Callbackw:
+##### Callbackw:
 
 > No Callbacks
 
-#### Event Listener:
+##### Event Listener:
 
 _If succeeded:_
 
