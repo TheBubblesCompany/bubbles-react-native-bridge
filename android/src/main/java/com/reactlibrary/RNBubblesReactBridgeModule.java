@@ -436,7 +436,7 @@ public class RNBubblesReactBridgeModule extends ReactContextBaseJavaModule {
           result.put("services", services);
           params.putString("result", result.toString());
         } catch (JSONException e) {
-          params.putString("result", DEFAULT_FAILED_HANDLER_RETURN);
+          params.putString("result", createFormattableFailedReturn(e.getMessage()));
         }
         sendEvent("onServicesChange", params);
       }
