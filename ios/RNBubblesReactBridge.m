@@ -29,7 +29,8 @@ RCT_EXPORT_METHOD(componentReady)
 
 RCT_EXPORT_METHOD(getVersion)
 {
-    [self sendEventWithName:@"getVersion" body:@{@"version": @"1.3.0"}];
+    NSLog(@"--- Send GetVersion ---");
+    [self sendEventWithName:@"getVersion" body:@{@"version": @"1.3.0", @"error": @"Something wrong man !"}];
 }
 
 RCT_EXPORT_METHOD(getBeaconsAround)
