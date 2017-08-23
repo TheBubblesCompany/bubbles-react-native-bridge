@@ -69,8 +69,8 @@ Name | Type | Attributes | Default | Description
 ```
 {
     identifier: "IBC01SRV000000000099",
-    name: "Test services",
-    description: "Test services description",
+    name: "Test Service",
+    description: "Test Service Description",
     pictoURL: "http://api-sdk.staging.bubbles-company.com/assets/img/service/assets/IBC01SRV000000000099/base/X4/picto_5943a7bbaa425998002626.png?date=20170110",
     pictoSplashURL: "http://api-sdk.staging.bubbles-company.com/assets/img/service/assets/IBC01SRV000000000099/base/X4/picto_splashscreen_5943a7bbc1355691342929.png?date=20170110",
     pictoColor: "#45CEDA"
@@ -90,27 +90,9 @@ Name | Type | Attributes | Default | Description
 
 ### Call from React to Phone OS
 
-#### reactIsUpToDate()
-
-> On Android only
-
-This handler needs to be called when the React part is up to date _(CodePush integration)_.
-
-##### Parameters:
-
-> No Parameters
-
-##### Callbacks:
-
-> No Callbackss
-
-##### Event Listener:
-
-> No Event Listener
-
 #### log(data)
 
-Display log in application system log for debug purpose.
+Displays a log in the application's log system for debug purpose.
 
 ##### Parameters:
 
@@ -126,37 +108,11 @@ Name | Type | Attributes | Default | Description
 
 > No Event Listener
 
-#### getBeaconsAround()
+#### reactIsUpToDate()
 
-Retrieve the list of Beacons detected by the phone.
+> On Android only
 
-##### Parameters:
-
-> No Parameters
-
-##### Callbacks:
-
-_Resolve:_
-
-Name | Type | Attributes | Default | Description
--|-|-|-|-
-`beacons` | Array | `<optional>` | [] | Beacons array
-`beacons.row` | Beacon | | | Beacons object
-
-_Reject:_
-
-Name | Type | Attributes | Default | Description
--|-|-|-|-
-`code` | Integer | | | Error code `0`
-`message` | String | | | Error message `JSON Exception`
-
-##### Event Listener:
-
-> No Event Listener
-
-#### closeService()
-
-Ask the native application to close the current service.
+Needs to be called when the React part is up to date _(CodePush integration)_.
 
 ##### Parameters:
 
@@ -170,36 +126,9 @@ Ask the native application to close the current service.
 
 > No Event Listener
 
-#### getBluetoothState()
+#### getVersion()
 
-Get Bluetooth State from the phone.
-
-##### Parameters:
-
-> No Parameters
-
-##### Callbacks:
-
-_Resolve:_
-
-Name | Type | Attributes | Default | Description
--|-|-|-|-
-`isActivated` | Boolean | | | Return Bluetooth state
-
-_Reject:_
-
-Name | Type | Attributes | Default | Description
--|-|-|-|-
-`code` | Integer | | | Error code `0`
-`message` | String | | | Error message `JSON Exception`
-
-##### Event Listener:
-
-> No Event Listener
-
-#### getLocalizationPermissionState()
-
-Get Localization Permission state from the phone.
+Gets the application's current Bridge version.
 
 ##### Parameters:
 
@@ -211,56 +140,29 @@ _Resolve:_
 
 Name | Type | Attributes | Default | Description
 -|-|-|-|-
-`is_authorized` | Boolean | | | Return Permission state
+`version` | String | | | Application Bridge version
 
-_Reject:_
+_Reject 1:_
 
 Name | Type | Attributes | Default | Description
 -|-|-|-|-
 `code` | Integer | | | Error code `0`
 `message` | String | | | Error message `JSON Exception`
 
+_Reject 2:_
+
+Name | Type | Attributes | Default | Description
+-|-|-|-|-
+`code` | Integer | | | Error code `2`
+`message` | String | | | Error message `Version not found`
+
 ##### Event Listener:
 
 > No Event Listener
-
-#### askForUniqueIdPermission()
-
-> On Android only
-
-Ask for Unique Id Permission from phone.
-
-##### Parameters:
-
-> No Parameters
-
-##### Callbacks:
-
-> No callbacks
-
-##### Event Listener:
-
-> See `onSendUniqueId`
-
-#### askForLocalizationPermission()
-
-Ask for Localization Permission from phone.
-
-##### Parameters:
-
-> No Parameters
-
-##### Callbacks:
-
-> No callbacks
-
-##### Event Listener:
-
-> See `onLocalizationPermissionChange`
 
 #### getServices()
 
-Ask for Services list.
+Asks for the Services list.
 
 ##### Parameters:
 
@@ -288,7 +190,7 @@ Name | Type | Attributes | Default | Description
 
 #### fetchServices()
 
-Ask Application to update the list of Services.
+Asks the application to update the Services list.
 
 ##### Parameters:
 
@@ -304,7 +206,7 @@ Ask Application to update the list of Services.
 
 #### openService(service_id)
 
-Ask phone to open a specific Service.
+Asks the application to open a specific Service.
 
 ##### Parameters:
 
@@ -338,9 +240,25 @@ Name | Type | Attributes | Default | Description
 
 > No Event Listener
 
-#### getVersion()
+#### closeService()
 
-Get current Application Bridge version.
+Asks the application to close the current Service.
+
+##### Parameters:
+
+> No Parameters
+
+##### Callbacks:
+
+> No Callbackss
+
+##### Event Listener:
+
+> No Event Listener
+
+#### getBeaconsAround()
+
+Retrieves the Beacons list detected by the phone.
 
 ##### Parameters:
 
@@ -352,29 +270,111 @@ _Resolve:_
 
 Name | Type | Attributes | Default | Description
 -|-|-|-|-
-`version` | String | | | Application Bridge version
+`beacons` | Array | `<optional>` | [] | Beacons array
+`beacons.row` | Beacon | | | Beacons object
 
-_Reject 1:_
+_Reject:_
 
 Name | Type | Attributes | Default | Description
 -|-|-|-|-
 `code` | Integer | | | Error code `0`
 `message` | String | | | Error message `JSON Exception`
 
-_Reject 2:_
+##### Event Listener:
+
+> No Event Listener
+
+#### getBluetoothState()
+
+Gets the phone's Bluetooth state.
+
+##### Parameters:
+
+> No Parameters
+
+##### Callbacks:
+
+_Resolve:_
 
 Name | Type | Attributes | Default | Description
 -|-|-|-|-
-`code` | Integer | | | Error code `2`
-`message` | String | | | Error message `Version not found`
+`isActivated` | Boolean | | | Return Bluetooth state
+
+_Reject:_
+
+Name | Type | Attributes | Default | Description
+-|-|-|-|-
+`code` | Integer | | | Error code `0`
+`message` | String | | | Error message `JSON Exception`
 
 ##### Event Listener:
 
 > No Event Listener
 
+#### getLocalizationPermissionState()
+
+Gets phone's Localization permission state.
+
+##### Parameters:
+
+> No Parameters
+
+##### Callbacks:
+
+_Resolve:_
+
+Name | Type | Attributes | Default | Description
+-|-|-|-|-
+`is_authorized` | Boolean | | | Return Permission state
+
+_Reject:_
+
+Name | Type | Attributes | Default | Description
+-|-|-|-|-
+`code` | Integer | | | Error code `0`
+`message` | String | | | Error message `JSON Exception`
+
+##### Event Listener:
+
+> No Event Listener
+
+#### askForLocalizationPermission()
+
+Asks for phone's Localization permission.
+
+##### Parameters:
+
+> No Parameters
+
+##### Callbacks:
+
+> No callbacks
+
+##### Event Listener:
+
+> See `onLocalizationPermissionChange`
+
+#### askForUniqueIdPermission()
+
+> On Android only
+
+Asks for phone's Unique Id permission.
+
+##### Parameters:
+
+> No Parameters
+
+##### Callbacks:
+
+> No callbacks
+
+##### Event Listener:
+
+> See `onSendUniqueId`
+
 #### enableBluetooth()
 
-Ask Application to enable the Bluetooth _(without prompting it to the user)_.
+Asks application to enable the Bluetooth _(without prompting it to the user)_.
 
 ##### Parameters:
 
@@ -415,83 +415,9 @@ Name | Type | Attributes | Default | Description
 
 ### Call from Phone OS to React
 
-#### onBluetoothStateChange()
-
-Fire when Bluetooth state change.
-
-##### Parameters:
-
-> No Parameters
-
-##### Callbacks:
-
-> No Callbacks
-
-##### Event Listener:
-
-Name | Type | Attributes | Default | Description
--|-|-|-|-
-`isActivated` | Boolean | | | Bluetooth state
-
-#### onBeaconChange()
-
-Fire Beacon data change.
-
-##### Parameters:
-
-> No Parameters
-
-##### Callbacks:
-
-> No Callbacks
-
-##### Event Listener:
-
-Name | Type | Attributes | Default | Description
--|-|-|-|-
-`beacon` | Beacon | | | Beacon new state
-
-#### onSendUniqueId()
-
-> On Android only
-
-Fire after Unique Id Permission question.
-
-##### Parameters:
-
-> No Parameters
-
-##### Callbacks:
-
-> No Callbacks
-
-##### Event Listener:
-
-Name | Type | Attributes | Default | Description
--|-|-|-|-
-`isAuthorized` | Boolean | | | Return `false` if user refuse
-
-#### onLocalizationPermissionChange(success)
-
-Fire after Localization permission question.
-
-##### Parameters:
-
-> No Parameters
-
-##### Callbacks:
-
-> No Callbacks
-
-##### Event Listener:
-
-Name | Type | Attributes | Default | Description
--|-|-|-|-
-`isAuthorized` | Boolean | | | Return `false` if user refuse
-
 #### onServicesChange(success, services)
 
-Fire when Services list is updated.
+Triggers when the Services list is updated.
 
 ##### Parameters:
 
@@ -516,3 +442,77 @@ Name | Type | Attributes | Default | Description
 -|-|-|-|-
 `success` | Array | | | `false`
 `message` | String | | | Error message
+
+#### onBeaconChange()
+
+Triggers any Beacon data change.
+
+##### Parameters:
+
+> No Parameters
+
+##### Callbacks:
+
+> No Callbacks
+
+##### Event Listener:
+
+Name | Type | Attributes | Default | Description
+-|-|-|-|-
+`beacon` | Beacon | | | Beacon new state
+
+#### onBluetoothStateChange()
+
+Triggers when the Bluetooth state changes.
+
+##### Parameters:
+
+> No Parameters
+
+##### Callbacks:
+
+> No Callbacks
+
+##### Event Listener:
+
+Name | Type | Attributes | Default | Description
+-|-|-|-|-
+`isActivated` | Boolean | | | Bluetooth state
+
+#### onLocalizationPermissionChange(success)
+
+Triggers after that the permission question is answered by the user.
+
+##### Parameters:
+
+> No Parameters
+
+##### Callbacks:
+
+> No Callbacks
+
+##### Event Listener:
+
+Name | Type | Attributes | Default | Description
+-|-|-|-|-
+`isAuthorized` | Boolean | | | Return `false` if user refuse
+
+#### onSendUniqueId()
+
+> On Android only
+
+Triggers after that the permission question is answered by the user.
+
+##### Parameters:
+
+> No Parameters
+
+##### Callbacks:
+
+> No Callbacks
+
+##### Event Listener:
+
+Name | Type | Attributes | Default | Description
+-|-|-|-|-
+`isAuthorized` | Boolean | | | Return `false` if user refuse
