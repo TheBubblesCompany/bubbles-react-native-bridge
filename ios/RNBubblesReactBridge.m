@@ -27,27 +27,148 @@ RCT_EXPORT_METHOD(componentReady)
     });
 }
 
-RCT_EXPORT_METHOD(getVersion)
+RCT_REMAP_METHOD(getVersion,
+                 getVersionResolver:(RCTPromiseResolveBlock)resolve
+                 rejecter:(RCTPromiseRejectBlock)reject)
 {
-    [self sendEventWithName:@"getVersion" body:@{@"version": @"1.3.0"}];
+    RCTLogInfo(@"Ask getVersion");
+    resolve(@"1.0.0");
 }
 
-RCT_EXPORT_METHOD(getBeaconsAround)
+RCT_REMAP_METHOD(getBeaconsAround,
+                 getBeaconsAroundResolver:(RCTPromiseResolveBlock)resolve
+                 rejecter:(RCTPromiseRejectBlock)reject)
 {
-    BOOL foundBeacons;
+    RCTLogInfo(@"Ask getBeaconsAround");
     if (self.beacons.count > 0)
-        foundBeacons = YES;
+    {
+        NSDictionary * dictionary = @{@"success" : [NSNumber numberWithBool:YES], @"beacons" : self.beacons};
+        
+        NSError * error;
+        NSData   *jsonData = [NSJSONSerialization dataWithJSONObject:dictionary options:0 error:&error];
+        NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+        
+        resolve(jsonString);
+    }
     else
-        foundBeacons = NO;
+    {
+        NSError *error = [[NSError alloc] initWithDomain:NSMachErrorDomain
+                                                    code:1 userInfo:nil];
+        reject(@"NO_BEACONS_FOUND", @"No Beacons found", error);
+    }
+}
+
+RCT_REMAP_METHOD(getLocalizationPermissionState,
+                 getLocalizationPermissionStateResolver:(RCTPromiseResolveBlock)resolve
+                 rejecter:(RCTPromiseRejectBlock)reject)
+{
+    if (![[NSUserDefaults standardUserDefaults] objectForKey:@"localizationPermission"])
+    {
+        NSError *error = [[NSError alloc] initWithDomain:NSMachErrorDomain
+                                                    code:1 userInfo:nil];
+        reject(@"PERMISSION_DENIED", @"Permission denied", error);
+    }
+    else
+    {
+        NSDictionary * dictionary = @{@"isAuthorized":@"true"};
+        
+        NSError * error;
+        NSData   *jsonData = [NSJSONSerialization dataWithJSONObject:dictionary options:0 error:&error];
+        NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+        
+        resolve(jsonString);
+    }
+}
+
+RCT_REMAP_METHOD(getNotificationPermissionState,
+                 getNotificationPermissionStateResolver:(RCTPromiseResolveBlock)resolve
+                 rejecter:(RCTPromiseRejectBlock)reject)
+{
+    if (![[NSUserDefaults standardUserDefaults] objectForKey:@"notificationPermission"])
+    {
+        NSError *error = [[NSError alloc] initWithDomain:NSMachErrorDomain
+                                                    code:1 userInfo:nil];
+        reject(@"PERMISSION_DENIED", @"Permission denied", error);
+        
+        
+    }
+    else
+    {
+       
+        NSDictionary * dictionary = @{@"isAuthorized":@"true"};
+        
+        NSError * error;
+        NSData   *jsonData = [NSJSONSerialization dataWithJSONObject:dictionary options:0 error:&error];
+        NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+        
+        resolve(jsonString);
+    }
+}
+
+RCT_EXPORT_METHOD(askForLocalizationPermission)
+{
+    [DATA.locationManager requestAlwaysAuthorization];
     
-    NSDictionary * dictionary = @{@"success" : [NSNumber numberWithBool:foundBeacons], @"beacons" : self.beacons};
+    if([DATA.locationManager respondsToSelector:@selector(requestAlwaysAuthorization)])
+        [DATA.locationManager requestAlwaysAuthorization];
+}
+
+RCT_EXPORT_METHOD(askForNotificationPermission)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        
+        UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+        [center requestAuthorizationWithOptions:(UNAuthorizationOptionBadge | UNAuthorizationOptionSound | UNAuthorizationOptionAlert)
+                              completionHandler:^(BOOL granted, NSError * _Nullable error) {
+                                  if (!error) {
+                                      
+                                      if (DATA.debug)
+                                          NSLog(@"request authorization succeeded!");
+                                      
+                                      if (granted)
+                                      {
+                                          [self callHandlerOnNotificationPermissionChange:YES];
+                                          
+                                          [[NSUserDefaults standardUserDefaults]setObject:@"true" forKey:@"notificationPermission"];
+                                          [[NSUserDefaults standardUserDefaults]synchronize];
+                                          
+                                      }
+                                      else
+                                      {
+                                          [self callHandlerOnNotificationPermissionChange:NO];
+                                          
+                                          [[NSUserDefaults standardUserDefaults]removeObjectForKey:@"notificationPermission"];
+                                          [[NSUserDefaults standardUserDefaults]synchronize];
+                                      }
+                                  }
+                              }];
+    });
+}
+
+RCT_REMAP_METHOD(getServices,
+                  getServicesResolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+{
+    NSMutableDictionary * services = [[NSUserDefaults standardUserDefaults] objectForKey:@"servicesBridge"];
     
-    NSError * error;
-    NSData   *jsonData = [NSJSONSerialization dataWithJSONObject:dictionary options:0 error:&error];
-    NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+    NSMutableArray * service = [services objectForKey:@"service"];
     
-    [self sendEventWithName:@"getBeaconsAround" body:@{@"beaconsList":jsonString}];
-    
+    if (service)
+    {
+        NSDictionary * dictionary = @{@"success" : [NSNumber numberWithBool:YES], @"services" : service };
+        
+        NSError * error;
+        NSData   *jsonData = [NSJSONSerialization dataWithJSONObject:dictionary options:0 error:&error];
+        NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+        
+        resolve(jsonString);
+    }
+    else
+    {
+        NSError *error = [[NSError alloc] initWithDomain:NSMachErrorDomain
+                                                    code:1 userInfo:nil];
+        reject(@"NO_SERVICES_FOUND", @"No Services found", error);
+    }
 }
 
 RCT_EXPORT_METHOD(closeService)
@@ -78,128 +199,6 @@ RCT_EXPORT_METHOD(getBluetoothState)
     
 }
 
-RCT_EXPORT_METHOD(getLocalizationPermissionState)
-{
-    NSString * locState;
-    if (![[NSUserDefaults standardUserDefaults] objectForKey:@"localizationPermission"])
-    {
-        locState = @"false";
-    }
-    else
-    {
-        locState = @"true";
-    }
-    
-    NSData *jsonData = [locState dataUsingEncoding:NSUTF8StringEncoding];
-    
-    NSString * jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-    
-    [self sendEventWithName:@"getLocalizationPermissionState" body:@{@"isAuthorized":jsonString}];
-}
-
-RCT_EXPORT_METHOD(getNotificationPermissionState)
-{
-    NSString * notifState;
-    if (![[NSUserDefaults standardUserDefaults] objectForKey:@"notificationPermission"])
-    {
-        notifState = @"{\"is_authorized\":false}";
-    }
-    else
-    {
-        notifState = @"{\"is_authorized\":true}";
-    }
-    
-    NSData *jsonData = [notifState dataUsingEncoding:NSUTF8StringEncoding];
-    
-    NSString * jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-    
-    [self sendEventWithName:@"getNotificationPermissionState" body:@{@"isAuthorized":jsonString}];
-}
-
-RCT_EXPORT_METHOD(askForLocalizationPermission)
-{
-    NSLog(@"askForLocalizationPermission");
-    
-    [DATA.locationManager requestAlwaysAuthorization];
-    
-    if([DATA.locationManager respondsToSelector:@selector(requestAlwaysAuthorization)])
-        [DATA.locationManager requestAlwaysAuthorization];
-    
-    NSDictionary * dictionary = @{@"success"    : [NSNumber numberWithBool:YES]};
-    
-    NSError * error;
-    NSData   *jsonData = [NSJSONSerialization dataWithJSONObject:dictionary options:0 error:&error];
-    NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-    
-    [self sendEventWithName:@"getLocalizationPermissionState" body:@{@"isAuthorized":jsonString}];
-}
-
-RCT_EXPORT_METHOD(askForNotificationPermission)
-{
-    dispatch_async(dispatch_get_main_queue(), ^{
-        
-        UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
-        [center requestAuthorizationWithOptions:(UNAuthorizationOptionBadge | UNAuthorizationOptionSound | UNAuthorizationOptionAlert)
-                              completionHandler:^(BOOL granted, NSError * _Nullable error) {
-                                  if (!error) {
-                                      
-                                      if (DATA.debug)
-                                          NSLog(@"request authorization succeeded!");
-                                      
-                                      if (granted)
-                                      {
-                                          [self callHandlerOnNotificationPermissionChange:YES];
-                                          
-                                          [[NSUserDefaults standardUserDefaults]setObject:@"true" forKey:@"notificationPermission"];
-                                          [[NSUserDefaults standardUserDefaults]synchronize];
-                                          
-                                      }
-                                      else
-                                      {
-                                          [self callHandlerOnNotificationPermissionChange:NO];
-                                          
-                                          [[NSUserDefaults standardUserDefaults]removeObjectForKey:@"notificationPermission"];
-                                          [[NSUserDefaults standardUserDefaults]synchronize];
-                                      }
-                                      
-                                      
-                                  }
-                              }];
-        
-    });
-    
-    NSDictionary * dictionary = @{@"success"    : [NSNumber numberWithBool:YES]};
-    
-    NSError * error;
-    NSData   *jsonData = [NSJSONSerialization dataWithJSONObject:dictionary options:0 error:&error];
-    NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-    
-    
-    [self sendEventWithName:@"getNotificationPermissionState" body:@{@"isAuthorized":jsonString}];
-}
-
-RCT_EXPORT_METHOD(getServices)
-{
-    NSMutableDictionary * services = [[NSUserDefaults standardUserDefaults] objectForKey:@"servicesBridge"];
-    
-    NSMutableArray * service = [services objectForKey:@"service"];
-    
-    if (service)
-    {
-        NSDictionary * dictionary = @{@"success" : [NSNumber numberWithBool:YES], @"services" : service };
-        
-        NSError * error;
-        NSData   *jsonData = [NSJSONSerialization dataWithJSONObject:dictionary options:0 error:&error];
-        NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-        
-        [self sendEventWithName:@"getServices" body:@{@"success" : [NSNumber numberWithBool:YES], @"services" : jsonString }];
-    }
-    else
-    {
-        [self sendEventWithName:@"getServices" body:@{@"success" : [NSNumber numberWithBool:NO]}];
-    }
-}
-
 RCT_EXPORT_METHOD(fetchServices)
 {
     [DATA requestServices];
@@ -207,9 +206,6 @@ RCT_EXPORT_METHOD(fetchServices)
 
 RCT_EXPORT_METHOD(openService:(NSString*)service_Id)
 {
-    
-    NSLog(@"service_Id : %@", service_Id);
-    
     NSMutableDictionary * services = [[NSUserDefaults standardUserDefaults] objectForKey:@"services"];
     
     BOOL flag = NO;
@@ -234,9 +230,6 @@ RCT_EXPORT_METHOD(openService:(NSString*)service_Id)
 
 RCT_EXPORT_METHOD(openBluetoothSettings)
 {
-    
-    NSLog(@"openBluetoothSettings");
-    
     NSString *settingsUrl= @"App-Prefs:root=Bluetooth";
     if ([[UIApplication sharedApplication] respondsToSelector:@selector(openURL:options:completionHandler:)]) {
         
@@ -245,7 +238,6 @@ RCT_EXPORT_METHOD(openBluetoothSettings)
         }];
     }
 }
-
 
 
 
@@ -427,7 +419,6 @@ static RNBubblesReactBridge * _bubblesReactBridge;
         for (NSMutableDictionary * newBeacon in _beacons)
         {
             BOOL contain = NO;
-            id lastObj = [_lastBeacons lastObject];
             for (NSMutableDictionary * lastBeacon in _lastBeacons)
             {
                 if ([[lastBeacon objectForKey:@"minor"] isEqualToString:[newBeacon objectForKey:@"minor"]] &&
@@ -549,20 +540,10 @@ static RNBubblesReactBridge * _bubblesReactBridge;
             [_beacons addObject:newBeacon];
         }
     }
-    
-    if (_beacons.count > 0)
-    {
-        for (NSMutableDictionary * newBeacon in _beacons)
-        {
-            [self callHandlerWithBeacon: newBeacon];
-            
-        }
-    }
 }
 
 -(void)callHandlerBluetoothStateChange:(NSString*)state
 {
-    
     NSString * jsonString;
     
     if ([state isEqualToString:@"true"])
@@ -581,60 +562,26 @@ static RNBubblesReactBridge * _bubblesReactBridge;
     [self sendEventWithName:@"onBluetoothStateChange" body:@{@"isActivated":json}];
 }
 
--(void)callHandlerWithBeacon:(NSMutableDictionary *)beacon
-{
-    
-    NSDictionary * dictionary = @{@"success" : [NSNumber numberWithBool:YES], @"beacon" : beacon};
-    
-    NSError * error;
-    NSData   *jsonData = [NSJSONSerialization dataWithJSONObject:dictionary options:0 error:&error];
-    NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-    
-}
 
 -(void)callHandlerOnLocalizationPermissionEnabled
 {
-    
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"localizationDidChange" object:[NSNumber numberWithBool:YES]];
-    
-    NSDictionary * dictionary = @{@"success" : [NSNumber numberWithBool:YES]};
-    
-    NSError * error;
-    NSData   *jsonData = [NSJSONSerialization dataWithJSONObject:dictionary options:0 error:&error];
-    NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-    
-    [self sendEventWithName:@"onLocalizationPermissionChange" body:@{@"isAuthorized":jsonString}];
+    [self sendEventWithName:@"onLocalizationPermissionChange" body:@{@"isAuthorized":@"true"}];
 }
 
 -(void)callHandlerOnLocalizationPermissionDisabled
 {
-    
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"localizationDidChange" object:[NSNumber numberWithBool:NO]];
-    
-    
-    NSDictionary * dictionary = @{@"success" : [NSNumber numberWithBool:NO]};
-    
-    NSError * error;
-    NSData   *jsonData = [NSJSONSerialization dataWithJSONObject:dictionary options:0 error:&error];
-    NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-    
-    [self sendEventWithName:@"onLocalizationPermissionChange" body:@{@"isAuthorized":jsonString}];
+    [self sendEventWithName:@"onLocalizationPermissionChange" body:@{@"isAuthorized":@"false"}];
 }
 
 -(void)callHandlerOnNotificationPermissionChange:(BOOL)success
 {
-    
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"notificationDidChange" object:[NSNumber numberWithBool:success]];
-    
-    
-    NSDictionary * dictionary = @{@"success" : [NSNumber numberWithBool:success]};
-    
-    NSError * error;
-    NSData   *jsonData = [NSJSONSerialization dataWithJSONObject:dictionary options:0 error:&error];
-    NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-    
-    [self sendEventWithName:@"onNotificationPermissionChange" body:@{@"isAuthorized":jsonString}];
-    
+    if (success) {
+       [self sendEventWithName:@"onNotificationPermissionChange" body:@{@"isAuthorized":@"true"}];
+    }
+    else
+    {
+        [self sendEventWithName:@"onNotificationPermissionChange" body:@{@"isAuthorized":@"false"}];
+    }
 }
 
 @end

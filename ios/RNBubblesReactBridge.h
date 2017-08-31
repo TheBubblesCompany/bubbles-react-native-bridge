@@ -12,7 +12,6 @@
 
 + (RNBubblesReactBridge *) bubblesReactBridge;
 -(void)log:(NSString*)log;
--(void)getVersion;
 -(void)closeService:(RCTResponseSenderBlock)callback;
 -(void)getBeaconsAround:(RCTResponseSenderBlock)callback;
 -(void)getBluetoothState:(RCTResponseSenderBlock)callback;
