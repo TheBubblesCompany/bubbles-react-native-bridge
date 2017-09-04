@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
-import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Callback;
@@ -319,9 +318,7 @@ public class RNBubblesReactBridgeModule extends ReactContextBaseJavaModule {
 
           JSONObject result = new JSONObject();
           result.put("isActivated", data);
-          WritableMap params = Arguments.createMap();
-          params.putString("result", result.toString());
-          sendEvent("onBluetoothStateChange", params);
+          sendEvent("onBluetoothStateChange", result.toString());
 
         } catch (JSONException e) {
           e.printStackTrace();
@@ -345,9 +342,7 @@ public class RNBubblesReactBridgeModule extends ReactContextBaseJavaModule {
           result.put("major", beacon.major);
           result.put("minor", beacon.minor);
           result.put("event", beacon.event);
-          WritableMap params = Arguments.createMap();
-          params.putString("result", result.toString());
-          sendEvent("onBeaconChange", params);
+          sendEvent("onBeaconChange", result.toString());
 
         } catch (JSONException e) {
           e.printStackTrace();
@@ -367,9 +362,7 @@ public class RNBubblesReactBridgeModule extends ReactContextBaseJavaModule {
 
           JSONObject result = new JSONObject();
           result.put("isAuthorized", data);
-          WritableMap params = Arguments.createMap();
-          params.putString("result", result.toString());
-          sendEvent("onSendUniqueId", params);
+          sendEvent("onSendUniqueId", result.toString());
 
         } catch (JSONException e) {
           e.printStackTrace();
@@ -389,9 +382,7 @@ public class RNBubblesReactBridgeModule extends ReactContextBaseJavaModule {
 
           JSONObject result = new JSONObject();
           result.put("isAuthorized", data);
-          WritableMap params = Arguments.createMap();
-          params.putString("result", result.toString());
-          sendEvent("onLocalizationPermissionChange", params);
+          sendEvent("onLocalizationPermissionChange", result.toString());
 
         } catch (JSONException e) {
           e.printStackTrace();
@@ -408,7 +399,7 @@ public class RNBubblesReactBridgeModule extends ReactContextBaseJavaModule {
 
         log("onServicesChange");
 
-        WritableMap params = Arguments.createMap();
+        String eventString;
         try {
           JSONObject result = new JSONObject();
           JSONArray services = new JSONArray();
@@ -434,11 +425,11 @@ public class RNBubblesReactBridgeModule extends ReactContextBaseJavaModule {
           services.put(jsonService);
 
           result.put("services", services);
-          params.putString("result", result.toString());
+          eventString = result.toString();
         } catch (JSONException e) {
-          params.putString("result", createFormattableFailedReturn(e.getMessage()));
+          eventString = createFormattableFailedReturn(e.getMessage());
         }
-        sendEvent("onServicesChange", params);
+        sendEvent("onServicesChange", eventString);
       }
     }
   }
@@ -447,10 +438,10 @@ public class RNBubblesReactBridgeModule extends ReactContextBaseJavaModule {
   ////////////////////////////////////////////// UTILS ///////////////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  private void sendEvent(String eventName, @Nullable WritableMap params) {
+  private void sendEvent(String eventName, String json) {
     reactContext
         .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-        .emit(eventName, params);
+        .emit(eventName, json);
   }
 
   private boolean getPhoneBluetoothState() {
