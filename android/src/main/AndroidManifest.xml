@@ -1,6 +1,27 @@
+<manifest
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  package="com.reactlibrary">
 
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.reactlibrary">
+
+  <!-- /!\ = Dangerous permission, need Runtime Permission with Android 6.0+ -->
+
+
+  <!-- BLE | Start -->
+  <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>  <!-- BL use need this with Android 6.0+ --> <!-- /!\ -->
+  <uses-permission android:name="android.permission.BLUETOOTH"/> <!-- BL use need this -->
+  <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/> <!-- BL scan need this -->
+  <!-- BLE | End -->
+
+
+  <!-- Internet | Start -->
+  <uses-permission android:name="android.permission.INTERNET"/> <!-- Need this to call WebServices -->
+  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+  <!-- Internet | End -->
+
+
+  <!-- Get IMEI | Start -->
+  <uses-permission android:name="android.permission.READ_PHONE_STATE"/> <!-- Need this to access the IMEI --> <!-- /!\ -->
+  <!-- Get IMEI | End -->
 
 </manifest>
   
