@@ -10,7 +10,10 @@ function moduleSelector() {
   }
   return BubblesReactBridgeIOS;
 }
-
 const BubblesReactBridge = moduleSelector();
+BubblesReactBridge.errorCode = {
+  PERMISSION_REJECTED: "PERMISSION_REJECTED",
+  PERMISSION_REQUIRED: "PERMISSION_REQUIRED",
+}
 
 export default BubblesReactBridge;

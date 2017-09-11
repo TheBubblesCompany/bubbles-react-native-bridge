@@ -8,7 +8,7 @@ import android.content.pm.PackageManager;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.support.v4.app.ActivityCompat;
-import com.facebook.react.bridge.Arguments;
+import android.util.Log;
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
@@ -41,7 +41,7 @@ import org.json.JSONObject;
 
 public class RNBubblesReactBridgeModule extends ReactContextBaseJavaModule {
 
-  private static final String TAG = "BubblesReactBridge";
+  private static final String TAG = "RNBubblesReactBridge";
 
   private static String DEFAULT_SUCCESS_HANDLER_RETURN = null;
   private static String DEFAULT_FAILED_HANDLER_RETURN = null;
@@ -57,11 +57,13 @@ public class RNBubblesReactBridgeModule extends ReactContextBaseJavaModule {
     }
   }
 
-  private static final int CALLBACK_CODE_JSON_EXCEPTION = 0;
-  private static final int CALLBACK_CODE_UNKNOWN_SERVICE = 1;
-  private static final int CALLBACK_CODE_BRIDGE_VERSION = 2;
-  private static final int CALLBACK_CODE_BLUETOOTH_ERROR = 3;
-  private static final int CALLBACK_CODE_BLUETOOTH_ON = 4;
+  private static final String CALLBACK_CODE_JSON_EXCEPTION = "JSON_EXCEPTION";
+  private static final String CALLBACK_CODE_UNKNOWN_SERVICE = "UNKNOWN_SERVICE";
+  private static final String CALLBACK_CODE_BRIDGE_VERSION = "UNKNOWN_BRIDGE_VERSION";
+  private static final String CALLBACK_CODE_BLUETOOTH_ERROR = "BLUETOOTH_ERROR";
+  private static final String CALLBACK_CODE_BLUETOOTH_ON = "BLUETOOTH_ON";
+  private static final String CALLBACK_CODE_PERMISSION_REQUIRED = "PERMISSION_REQUIRED";
+  private static final String CALLBACK_CODE_INTERNAL_ERROR = "INTERNAL_ERROR";
 
   private final ReactApplicationContext reactContext;
 
@@ -79,7 +81,7 @@ public class RNBubblesReactBridgeModule extends ReactContextBaseJavaModule {
 
   @Override
   public String getName() {
-    return "BubblesReactBridge";
+    return "RNBubblesReactBridge";
   }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -94,6 +96,7 @@ public class RNBubblesReactBridgeModule extends ReactContextBaseJavaModule {
   @ReactMethod
   public void log(String data) {
     ML.e(TAG, data);
+    Log.e(TAG, data);
   }
 
   @ReactMethod
@@ -157,6 +160,71 @@ public class RNBubblesReactBridgeModule extends ReactContextBaseJavaModule {
       callback.invoke(null, new JSONObject().put("isAuthorized", isAuthorized).toString());
     } catch (JSONException e) {
       callback.invoke(createRejectCallback(CALLBACK_CODE_JSON_EXCEPTION, e.getMessage()), null);
+    }
+  }
+
+  @ReactMethod
+  public void getDeviceId(Callback callback) {
+    String deviceID = MyBubblesSDK.mInstance.deviceID;
+    if (deviceID != null) {
+      try {
+        JSONObject result = new JSONObject();
+        result.put("deviceId", deviceID);
+        callback.invoke(null, result.toString());
+      } catch (JSONException e) {
+        callback.invoke(createRejectCallback(CALLBACK_CODE_JSON_EXCEPTION, e.getMessage()), null);
+      }
+    } else {
+      callback.invoke(createRejectCallback(CALLBACK_CODE_INTERNAL_ERROR, "Is SDK init?"), null);
+    }
+  }
+
+  @ReactMethod
+  public void getApplicationId(Callback callback) {
+    String apiKey = MyBubblesSDK.mInstance.apiKey;
+    if (apiKey != null) {
+      try {
+        JSONObject result = new JSONObject();
+        result.put("applicationId", apiKey);
+        callback.invoke(null, result.toString());
+      } catch (JSONException e) {
+        callback.invoke(createRejectCallback(CALLBACK_CODE_JSON_EXCEPTION, e.getMessage()), null);
+      }
+    } else {
+      callback.invoke(createRejectCallback(CALLBACK_CODE_INTERNAL_ERROR, "Is SDK init?"), null);
+    }
+  }
+
+  @ReactMethod
+  public void getUserId(Callback callback) {
+    String userID = MyBubblesSDK.mInstance.userID;
+    if (userID != null) {
+      try {
+        JSONObject result = new JSONObject();
+        result.put("userId", userID);
+        callback.invoke(null, result.toString());
+      } catch (JSONException e) {
+        callback.invoke(createRejectCallback(CALLBACK_CODE_JSON_EXCEPTION, e.getMessage()), null);
+      }
+    } else {
+      callback.invoke(createRejectCallback(CALLBACK_CODE_INTERNAL_ERROR, "Is SDK init?"), null);
+    }
+  }
+
+  @ReactMethod
+  public void getUniqueDeviceId(Callback callback) {
+    String uniqueID = MyBubblesSDK.mInstance.uniqueID;
+    if (uniqueID != null) {
+      try {
+        JSONObject result = new JSONObject();
+        result.put("isAuthorized", true);
+        result.put("uniqueDeviceId", uniqueID);
+        callback.invoke(null, result.toString());
+      } catch (JSONException e) {
+        callback.invoke(createRejectCallback(CALLBACK_CODE_JSON_EXCEPTION, e.getMessage()), null);
+      }
+    } else {
+      callback.invoke(createRejectCallback(CALLBACK_CODE_PERMISSION_REQUIRED, "Permission required"), null);
     }
   }
 
@@ -359,9 +427,14 @@ public class RNBubblesReactBridgeModule extends ReactContextBaseJavaModule {
         try {
 
           log("onSendUniqueId");
+          boolean isAuthorized = (Boolean) data;
 
           JSONObject result = new JSONObject();
-          result.put("isAuthorized", data);
+          result.put("isAuthorized", isAuthorized);
+          if (isAuthorized) {
+            result.put("uniqueDeviceId", MyBubblesSDK.mInstance.uniqueID);
+          }
+
           sendEvent("onSendUniqueId", result.toString());
 
         } catch (JSONException e) {
@@ -458,7 +531,7 @@ public class RNBubblesReactBridgeModule extends ReactContextBaseJavaModule {
     return null;
   }
 
-  private WritableMap createRejectCallback(int code, String message) {
+  private WritableMap createRejectCallback(String code, String message) {
     ErrorObject errorObject = new ErrorObject(code, message);
     WritableMap errorMap = null;
     try {
@@ -471,10 +544,10 @@ public class RNBubblesReactBridgeModule extends ReactContextBaseJavaModule {
 
   private class ErrorObject {
 
-    private int code;
+    private String code;
     private String message;
 
-    public ErrorObject(final int code, final String message) {
+    public ErrorObject(final String code, final String message) {
       this.code = code;
       this.message = message;
     }
