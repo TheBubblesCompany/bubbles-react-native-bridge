@@ -271,16 +271,6 @@ public class RNBubblesReactBridgeModule extends ReactContextBaseJavaModule {
         services.put(jsonService);
       }
 
-      // TODO: test data, remove
-      JSONObject jsonService = new JSONObject();
-      jsonService.put("identifier", "IBC01SRV1337042");
-      jsonService.put("name", "Fake Test Service");
-      jsonService.put("description", "This is a Fake Test Service");
-      jsonService.put("pictoURL", "-");
-      jsonService.put("pictoSplashURL", "-");
-      jsonService.put("pictoColor", "#DA45CE");
-      services.put(jsonService);
-
       result.put("services", services);
       callback.invoke(null, result.toString());
 
@@ -300,22 +290,13 @@ public class RNBubblesReactBridgeModule extends ReactContextBaseJavaModule {
   public void openService(String serviceId, Callback callback) {
     log("openService");
 
-    log("jsonData : " + serviceId);
+    log("serviceId : " + serviceId);
 
     String ret;
 
-    String id;
-    try {
-      JSONObject jsonData = new JSONObject(serviceId);
-      id = jsonData.getString("service_id");
-    } catch (JSONException e) {
-      callback.invoke(createRejectCallback(CALLBACK_CODE_JSON_EXCEPTION, e.getMessage()), null);
-      return;
-    }
-
     boolean flag = false;
     for (MyBubblesService service : MyBubblesSDK.mInstance.handlerWebServices.services) {
-      if (service.identifier.equalsIgnoreCase(id)) {
+      if (service.identifier.equalsIgnoreCase(serviceId)) {
         flag = true;
         break;
       }
@@ -327,7 +308,7 @@ public class RNBubblesReactBridgeModule extends ReactContextBaseJavaModule {
 
     Activity activity = getCurrentActivity();
     if (activity != null) {
-      activity.startActivity(new Intent(activity, MyBubblesSDK.mInterface.getServiceActivityClass()).putExtra("myBubblesServiceID", id));
+      activity.startActivity(new Intent(activity, MyBubblesSDK.mInterface.getServiceActivityClass()).putExtra("myBubblesServiceID", serviceId));
     }
 
     ret = DEFAULT_SUCCESS_HANDLER_RETURN;
