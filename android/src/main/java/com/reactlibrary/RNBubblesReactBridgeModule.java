@@ -229,14 +229,6 @@ public class RNBubblesReactBridgeModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
-  public void askForUniqueIdPermission() {
-    log("askForUniqueIdPermission");
-
-    // Get phone's IMEI for unique identification.
-    MyBubblesSDK.mInstance.getIMEI();
-  }
-
-  @ReactMethod
   public void askForLocalizationPermission() {
     log("askForLocalizationPermission");
 
