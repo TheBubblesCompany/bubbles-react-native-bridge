@@ -1,8 +1,11 @@
 buildscript {
 
-    repositories { jcenter() }
+    repositories {
+        jcenter()
+        google()
+    }
 
-    dependencies { classpath 'com.android.tools.build:gradle:2.2.3' }
+    dependencies { classpath 'com.android.tools.build:gradle:3.0.0' }
 }
 
 apply plugin: 'com.android.library'
@@ -22,10 +25,13 @@ android {
     lintOptions { abortOnError false }
 }
 
-repositories { mavenCentral() }
+repositories {
+    mavenCentral()
+    google()
+}
 
 dependencies {
     compile 'com.facebook.react:react-native:+'
 
-    compile 'com.mybubbles.sdk:android-sdk:2.6.2'
+    compile 'com.mybubbles.sdk:android-sdk:2.6.3'
 }
